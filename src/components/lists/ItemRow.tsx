@@ -8,6 +8,7 @@ interface Item {
   quantity: number
   unit: string | null
   checked: boolean
+  image_url?: string | null
 }
 
 interface Props {
@@ -32,6 +33,27 @@ export function ItemRow({ item, onToggle, onDelete, borderTop }: Props) {
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--accent-glow)' }}
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
     >
+      {/* Product thumbnail */}
+      {item.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={item.image_url}
+          alt=""
+          width={36}
+          height={36}
+          style={{
+            borderRadius: 6,
+            objectFit: 'contain',
+            background: 'var(--bg-secondary)',
+            flexShrink: 0,
+            opacity: item.checked ? 0.4 : 1,
+          }}
+          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+        />
+      ) : (
+        <div style={{ width: 36, height: 36, flexShrink: 0 }} />
+      )}
+
       {/* Checkbox */}
       <button
         onClick={onToggle}

@@ -21,6 +21,8 @@ interface Item {
   checked_at: string | null
   added_by: string
   created_at: string
+  product_id?: string | null
+  image_url?: string | null
 }
 
 interface Member {
@@ -44,7 +46,12 @@ interface Props {
 }
 
 export function ListDetailClient({ list: initialList, userId }: Props) {
-  const [items, setItems]             = useState<Item[]>(initialList.items)
+  const [items, setItems]             = useState<Item[]>(
+    (initialList.items as any[]).map((item: any) => ({
+      ...item,
+      image_url: item.products?.image_url ?? null,
+    }))
+  )
   const [members, setMembers]         = useState<Member[]>(initialList.list_members)
   const [showPartner, setShowPartner] = useState(false)
   const [inStoreMode, setInStoreMode] = useState(false)

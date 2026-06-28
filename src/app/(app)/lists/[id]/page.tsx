@@ -12,7 +12,7 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
     .select(`
       id, name, is_active, owner_id,
       list_members(user_id, role, profiles(username, avatar_url)),
-      items(id, name, quantity, unit, checked, checked_by, checked_at, added_by, created_at)
+      items(id, name, quantity, unit, checked, checked_by, checked_at, added_by, created_at, product_id, products(image_url))
     `)
     .eq('id', id)
     .single()
