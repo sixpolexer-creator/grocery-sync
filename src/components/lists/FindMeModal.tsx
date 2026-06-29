@@ -19,6 +19,10 @@ export function FindMeModal({ listId, onClose }: Props) {
   const [expanded, setExpanded]     = useState<string | null>(null)
   const [locating, setLocating]     = useState(false)
   const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null)
+  const [usingFallback, setUsingFallback] = useState(false)
+
+  // Ashkelon/Ashdod southern district — used when GPS is unavailable
+  const FALLBACK_COORDS = { lat: 31.6659, lon: 34.5714 }
 
   const fetchCompare = useCallback(async (coords?: { lat: number; lon: number }) => {
     setLoading(true)
@@ -45,16 +49,30 @@ export function FindMeModal({ listId, onClose }: Props) {
   useEffect(() => { fetchCompare() }, [fetchCompare])
 
   const requestLocation = () => {
-    if (!navigator.geolocation) return
     setLocating(true)
+    if (!navigator.geolocation) {
+      // No GPS support — use Ashkelon/Ashdod fallback
+      setUsingFallback(true)
+      setUserCoords(FALLBACK_COORDS)
+      setLocating(false)
+      fetchCompare(FALLBACK_COORDS)
+      return
+    }
     navigator.geolocation.getCurrentPosition(
       pos => {
         const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude }
         setUserCoords(coords)
+        setUsingFallback(false)
         setLocating(false)
         fetchCompare(coords)
       },
-      () => setLocating(false),
+      () => {
+        // GPS denied/timed out — fall back to Ashkelon
+        setUsingFallback(true)
+        setUserCoords(FALLBACK_COORDS)
+        setLocating(false)
+        fetchCompare(FALLBACK_COORDS)
+      },
       { timeout: 8000 }
     )
   }
@@ -119,7 +137,11 @@ export function FindMeModal({ listId, onClose }: Props) {
         </div>
 
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-          {userCoords ? 'מציג חנויות עד 20 ק״מ ממיקומך' : 'השוואת מחירים לפריטים המקושרים במאגר'}
+          {userCoords
+            ? usingFallback
+              ? 'מציג חנויות עד 20 ק״מ מאשקלון/אשדוד (מיקום בדיקה)'
+              : 'מציג חנויות עד 20 ק״מ ממיקומך'
+            : 'השוואת מחירים לפריטים המקושרים במאגר'}
         </p>
 
         {/* Loading */}
