@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 import { ProductSearch } from './ProductSearch'
 
 interface Props {
-  onAdd: (name: string, quantity: number, unit: string, productId?: string) => Promise<void>
+  onAdd: (name: string, quantity: number, unit: string, productId?: string, imageUrl?: string) => Promise<void>
 }
 
 const UNITS = ['', 'יח׳', 'ק"ג', 'גר׳', 'ל׳', 'מ"ל', 'חבילה', 'צרור']
@@ -13,6 +13,7 @@ const UNITS = ['', 'יח׳', 'ק"ג', 'גר׳', 'ל׳', 'מ"ל', 'חבילה', '
 export function AddItemBar({ onAdd }: Props) {
   const [name, setName]           = useState('')
   const [productId, setProductId] = useState<string | undefined>(undefined)
+  const [imageUrl, setImageUrl]   = useState<string | undefined>(undefined)
   const [quantity, setQuantity]   = useState('1')
   const [unit, setUnit]           = useState('')
   const [loading, setLoading]     = useState(false)
@@ -21,9 +22,10 @@ export function AddItemBar({ onAdd }: Props) {
   const submit = async () => {
     if (!name.trim()) return
     setLoading(true)
-    await onAdd(name.trim(), parseFloat(quantity) || 1, unit, productId)
+    await onAdd(name.trim(), parseFloat(quantity) || 1, unit, productId, imageUrl)
     setName('')
     setProductId(undefined)
+    setImageUrl(undefined)
     setQuantity('1')
     setUnit('')
     setExpanded(false)
@@ -38,10 +40,11 @@ export function AddItemBar({ onAdd }: Props) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
         <ProductSearch
           value={name}
-          onChange={v => { setName(v); setExpanded(true); setProductId(undefined) }}
+          onChange={v => { setName(v); setExpanded(true); setProductId(undefined); setImageUrl(undefined) }}
           onSelect={(product, resolvedName) => {
             setName(resolvedName)
             setProductId(product?.id)
+            setImageUrl(product?.image_url ?? undefined)
             setExpanded(true)
           }}
           placeholder="הוסף פריט לרשימה..."

@@ -52,13 +52,38 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
       image_url: item.products?.image_url ?? null,
     }))
   )
-  const [members, setMembers]         = useState<Member[]>(initialList.list_members)
-  const [showPartner, setShowPartner] = useState(false)
-  const [inStoreMode, setInStoreMode] = useState(false)
-  const [showFindMe, setShowFindMe]   = useState(false)
+  const [members, setMembers]           = useState<Member[]>(initialList.list_members)
+  const [showPartner, setShowPartner]   = useState(false)
+  const [inStoreMode, setInStoreMode]   = useState(false)
+  const [showFindMe, setShowFindMe]     = useState(false)
+  const [priceEstimates, setPriceEstimates] = useState<Map<string, number>>(new Map())
   const router = useRouter()
   const supabase = createClient()
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
+  // ── Fetch average market prices for all linked products ──────────────
+  useEffect(() => {
+    const productIds = items
+      .map(i => i.product_id)
+      .filter((id): id is string => Boolean(id))
+    if (productIds.length === 0) return
+
+    supabase
+      .from('market_prices')
+      .select('product_id, price')
+      .in('product_id', productIds)
+      .then(({ data }) => {
+        if (!data) return
+        const sums = new Map<string, { sum: number; count: number }>()
+        for (const row of data) {
+          const cur = sums.get(row.product_id) ?? { sum: 0, count: 0 }
+          sums.set(row.product_id, { sum: cur.sum + Number(row.price), count: cur.count + 1 })
+        }
+        const avgs = new Map<string, number>()
+        sums.forEach((v, k) => avgs.set(k, Math.round(v.sum / v.count * 100) / 100))
+        setPriceEstimates(avgs)
+      })
+  }, [items.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Supabase Realtime subscription ──────────────────────────────────
   useEffect(() => {
@@ -67,10 +92,26 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'items', filter: `list_id=eq.${initialList.id}` },
-        payload => setItems(prev => {
-          if (prev.some(i => i.id === payload.new.id)) return prev
-          return [...prev, payload.new as Item]
-        })
+        async payload => {
+          const newItem: Item = { ...payload.new as Item, image_url: null }
+          setItems(prev => {
+            if (prev.some(i => i.id === payload.new.id)) return prev
+            return [...prev, newItem]
+          })
+          // Fetch image_url for items added by collaborators
+          if (payload.new.product_id) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('image_url')
+              .eq('id', payload.new.product_id)
+              .single()
+            if (prod?.image_url) {
+              setItems(prev => prev.map(i =>
+                i.id === payload.new.id ? { ...i, image_url: prod.image_url } : i
+              ))
+            }
+          }
+        }
       )
       .on(
         'postgres_changes',
@@ -117,14 +158,14 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
     await supabase.from('items').delete().eq('id', itemId)
   }
 
-  const addItem = async (name: string, quantity: number, unit: string, productId?: string) => {
+  const addItem = async (name: string, quantity: number, unit: string, productId?: string, imageUrl?: string) => {
     const { data, error } = await supabase
       .from('items')
       .insert({ list_id: initialList.id, added_by: userId, name, quantity, unit: unit || null, product_id: productId ?? null })
       .select()
       .single()
     if (!error && data) {
-      setItems(prev => [...prev, data as Item])
+      setItems(prev => [...prev, { ...data as Item, image_url: imageUrl ?? null }])
     }
   }
 
@@ -207,7 +248,7 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
       <MembersBar members={members} />
 
       {/* Add item */}
-      <AddItemBar onAdd={addItem} />
+      <AddItemBar onAdd={(n, q, u, pid, img) => addItem(n, q, u, pid, img)} />
 
       {/* Unchecked items */}
       {unchecked.length > 0 && (
@@ -217,6 +258,7 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
               key={item.id}
               item={item}
               userId={userId}
+              estimatedPrice={item.product_id ? (priceEstimates.get(item.product_id) ?? null) : null}
               onToggle={() => toggleItem(item)}
               onDelete={() => deleteItem(item.id)}
               borderTop={i > 0}
@@ -245,6 +287,7 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
                 key={item.id}
                 item={item}
                 userId={userId}
+                estimatedPrice={item.product_id ? (priceEstimates.get(item.product_id) ?? null) : null}
                 onToggle={() => toggleItem(item)}
                 onDelete={() => deleteItem(item.id)}
                 borderTop={i > 0}

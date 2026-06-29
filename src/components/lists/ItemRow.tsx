@@ -14,12 +14,13 @@ interface Item {
 interface Props {
   item: Item
   userId: string
+  estimatedPrice?: number | null
   onToggle: () => void
   onDelete: () => void
   borderTop?: boolean
 }
 
-export function ItemRow({ item, onToggle, onDelete, borderTop }: Props) {
+export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }: Props) {
   return (
     <div
       style={{
@@ -91,6 +92,26 @@ export function ItemRow({ item, onToggle, onDelete, borderTop }: Props) {
       {(item.quantity !== 1 || item.unit) && (
         <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', flexShrink: 0 }}>
           {item.quantity}{item.unit ? ` ${item.unit}` : ''}
+        </span>
+      )}
+
+      {/* Estimated price badge */}
+      {estimatedPrice != null && !item.checked && (
+        <span
+          style={{
+            fontSize: '0.68rem',
+            fontWeight: 600,
+            color: 'var(--accent-teal)',
+            background: 'rgba(13,148,136,0.1)',
+            border: '1px solid rgba(13,148,136,0.25)',
+            borderRadius: 5,
+            padding: '0.1rem 0.45rem',
+            flexShrink: 0,
+            letterSpacing: '0.01em',
+          }}
+          title="הערכת מחיר ממוצעת"
+        >
+          ~₪{estimatedPrice.toFixed(2)}
         </span>
       )}
 

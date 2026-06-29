@@ -9,6 +9,7 @@ interface Product {
   name: string
   brand: string | null
   category: string | null
+  image_url: string | null
 }
 
 interface Props {
