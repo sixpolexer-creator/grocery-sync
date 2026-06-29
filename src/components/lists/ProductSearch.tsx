@@ -61,7 +61,8 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
       e.preventDefault()
       const p = results[activeIdx]
       onSelect(p, p.name)
-      onChange(p.name)
+      // Do NOT call onChange here — onSelect already sets name in parent,
+      // and calling onChange would immediately reset productId to undefined.
       setOpen(false)
       setActiveIdx(-1)
     }
@@ -151,7 +152,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
           {results.map((product, i) => (
             <button
               key={product.id}
-              onClick={() => { onSelect(product, product.name); onChange(product.name); setOpen(false); setActiveIdx(-1) }}
+              onClick={() => { onSelect(product, product.name); setOpen(false); setActiveIdx(-1) }}
               style={{
                 width: '100%', textAlign: 'right', padding: '0.65rem 1rem',
                 background: i === activeIdx ? 'var(--accent-glow)' : 'transparent',
