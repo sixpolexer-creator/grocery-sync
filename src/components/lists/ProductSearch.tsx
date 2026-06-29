@@ -34,10 +34,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
       const { data } = await supabase
-        .from('products')
-        .select('id, name, brand, category')
-        .ilike('name', `%${value.trim()}%`)
-        .limit(10)
+        .rpc('search_products', { query: value.trim(), max_results: 20 })
       setResults((data as Product[]) ?? [])
       setOpen(true)
       setLoading(false)
