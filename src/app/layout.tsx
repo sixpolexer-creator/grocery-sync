@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ToastProvider } from '@/components/Toast'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   title: 'קניות | GrocerySync',
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
         <ThemeProvider><ToastProvider>{children}</ToastProvider></ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
