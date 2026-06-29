@@ -24,11 +24,19 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
   const [open, setOpen]           = useState(false)
   const [loading, setLoading]     = useState(false)
   const [activeIdx, setActiveIdx] = useState(-1)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const wrapRef = useRef<HTMLDivElement>(null)
+  const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapRef        = useRef<HTMLDivElement>(null)
+  // Set to true after a product is selected; prevents the value-change useEffect
+  // from immediately re-running the search and reopening the dropdown.
+  const justSelectedRef = useRef(false)
   const supabase = createClient()
 
   useEffect(() => {
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      return
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (value.trim().length < 2) { setResults([]); setOpen(false); return }
 
@@ -59,10 +67,9 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
     if (e.key === 'ArrowUp')    { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)) }
     if (e.key === 'Enter' && activeIdx >= 0) {
       e.preventDefault()
+      justSelectedRef.current = true
       const p = results[activeIdx]
       onSelect(p, p.name)
-      // Do NOT call onChange here — onSelect already sets name in parent,
-      // and calling onChange would immediately reset productId to undefined.
       setOpen(false)
       setActiveIdx(-1)
     }
@@ -152,7 +159,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
           {results.map((product, i) => (
             <button
               key={product.id}
-              onClick={() => { onSelect(product, product.name); setOpen(false); setActiveIdx(-1) }}
+              onClick={() => { justSelectedRef.current = true; onSelect(product, product.name); setOpen(false); setActiveIdx(-1) }}
               style={{
                 width: '100%', textAlign: 'right', padding: '0.65rem 1rem',
                 background: i === activeIdx ? 'var(--accent-glow)' : 'transparent',
