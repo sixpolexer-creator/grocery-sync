@@ -23,6 +23,7 @@ interface Props {
 export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }: Props) {
   return (
     <div
+      className="item-enter"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -58,6 +59,8 @@ export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }:
       {/* Checkbox */}
       <button
         onClick={onToggle}
+        aria-label={item.checked ? 'בטל סימון' : 'סמן כנרכש'}
+        title={item.checked ? 'בטל סימון' : 'סמן כנרכש'}
         style={{
           width: 22,
           height: 22,
@@ -102,8 +105,8 @@ export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }:
             fontSize: '0.68rem',
             fontWeight: 600,
             color: 'var(--accent-teal)',
-            background: 'rgba(13,148,136,0.1)',
-            border: '1px solid rgba(13,148,136,0.25)',
+            background: 'rgba(224,122,56,0.10)',
+            border: '1px solid rgba(224,122,56,0.25)',
             borderRadius: 5,
             padding: '0.1rem 0.45rem',
             flexShrink: 0,
@@ -118,6 +121,8 @@ export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }:
       {/* Delete */}
       <button
         onClick={onDelete}
+        aria-label={`הסר ${item.name} מהרשימה`}
+        title="הסר פריט"
         style={{
           background: 'none',
           border: 'none',
@@ -126,12 +131,12 @@ export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }:
           display: 'flex',
           padding: '0.2rem',
           borderRadius: 5,
-          opacity: 0.5,
-          transition: 'opacity 0.15s',
+          opacity: 0.4,
+          transition: 'opacity 0.15s, color 0.15s',
           flexShrink: 0,
         }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.5' }}
+        onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.opacity = '1'; b.style.color = '#ef4444' }}
+        onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.opacity = '0.4'; b.style.color = 'var(--text-muted)' }}
       >
         <Trash2 size={13} />
       </button>

@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ShoppingCart } from 'lucide-react'
+import Image from 'next/image'
 
 function LoginInner() {
   const params = useSearchParams()
@@ -55,23 +55,18 @@ function LoginContent({ error }: { error: string | null }) {
       >
         {/* Brand */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 14,
-              background: 'var(--accent-glow)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ShoppingCart size={28} style={{ color: 'var(--accent-indigo)' }} />
-          </div>
+          <Image
+            src="/logo.jpeg"
+            alt="GrocerySync"
+            width={72}
+            height={72}
+            style={{ borderRadius: 16, objectFit: 'contain' }}
+            priority
+          />
           <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            קניות
+            GrocerySync
           </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
             קניות משותפות בזמן אמת עם חברים ומשפחה
           </p>
         </div>

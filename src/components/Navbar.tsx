@@ -5,6 +5,7 @@ import { Moon, Sun, ShoppingCart, LogOut, History } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { FriendsPanel } from './FriendsPanel'
+import Image from 'next/image'
 
 interface NavbarProps {
   username?: string | null
@@ -40,10 +41,18 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <button
             onClick={() => router.push('/lists')}
+            aria-label="דף הבית - רשימות קניות"
             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0 }}
           >
-            <ShoppingCart size={20} style={{ color: 'var(--accent-indigo)' }} />
-            <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>קניות</span>
+            <Image
+              src="/logo.jpeg"
+              alt="GrocerySync"
+              width={32}
+              height={32}
+              style={{ borderRadius: 6, objectFit: 'contain', flexShrink: 0 }}
+              priority
+            />
+            <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>GrocerySync</span>
           </button>
           {username && (
             <nav style={{ display: 'flex', gap: '0.25rem' }}>
@@ -88,10 +97,14 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
           <button
             onClick={toggle}
             aria-label="החלף מצב תצוגה"
+            title={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}
             style={{
               background: 'none', border: '1px solid var(--border)', borderRadius: 8,
               padding: '0.35rem', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
+              transition: 'border-color 0.15s, color 0.15s',
             }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent-indigo)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-indigo)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)' }}
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
@@ -100,10 +113,14 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
             <button
               onClick={handleLogout}
               aria-label="התנתקות"
+              title="התנתקות"
               style={{
                 background: 'none', border: '1px solid var(--border)', borderRadius: 8,
                 padding: '0.35rem', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
+                transition: 'border-color 0.15s, color 0.15s',
               }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#ef4444'; (e.currentTarget as HTMLButtonElement).style.color = '#ef4444' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)' }}
             >
               <LogOut size={16} />
             </button>
