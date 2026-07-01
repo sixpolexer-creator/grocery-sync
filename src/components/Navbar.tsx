@@ -42,14 +42,15 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
   const deviceToggleButton = (
     <button
       onClick={() => setDeviceOverride(preference === 'mobile' ? 'desktop' : preference === 'desktop' ? 'auto' : 'mobile')}
+      className="mobile-drawer-item"
       style={{
-        display: 'flex', alignItems: 'center', gap: '0.4rem',
-        padding: '0.5rem 0.75rem', borderRadius: 8,
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        padding: '0.7rem 0.9rem', borderRadius: 10,
         border: '1px solid var(--border)', background: 'none',
-        color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', width: '100%',
+        color: 'var(--text-muted)', fontSize: '0.9rem', cursor: 'pointer', width: '100%',
       }}
     >
-      {deviceType === 'mobile' ? <Monitor size={14} /> : <Smartphone size={14} />}
+      {deviceType === 'mobile' ? <Monitor size={16} /> : <Smartphone size={16} />}
       {deviceType === 'mobile' ? 'גרסת מחשב' : 'גרסת נייד'}
     </button>
   )
@@ -111,10 +112,11 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
                 <button
                   key={link.href}
                   onClick={() => { router.push(link.href); setDrawerOpen(false) }}
+                  className="mobile-drawer-item"
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    padding: '0.55rem 0.75rem', borderRadius: 8,
-                    border: 'none', cursor: 'pointer', fontSize: '0.85rem', width: '100%',
+                    padding: '0.7rem 0.9rem', borderRadius: 10,
+                    border: '1px solid transparent', cursor: 'pointer', fontSize: '0.9rem', width: '100%',
                     fontWeight: pathname?.startsWith(link.href) ? 600 : 400,
                     background: pathname?.startsWith(link.href) ? 'var(--accent-glow)' : 'none',
                     color: pathname?.startsWith(link.href) ? 'var(--accent-indigo)' : 'var(--text-muted)',
@@ -129,19 +131,19 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
           <div className="divider" />
 
           {username && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.5rem 0.75rem' }}>
               {avatarUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt={username ?? ''} width={28} height={28}
-                  style={{ borderRadius: '50%', border: '1px solid var(--border)' }} />
+                <img src={avatarUrl} alt={username ?? ''} width={32} height={32}
+                  style={{ borderRadius: '50%', border: '1px solid var(--border)', flexShrink: 0 }} />
               )}
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>@{username}</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>@{username}</span>
             </div>
           )}
 
           {username && (
             <div style={{ padding: '0 0.75rem' }}>
-              <FriendsPanel userId={userId} />
+              <FriendsPanel userId={userId} inline />
             </div>
           )}
 
@@ -149,10 +151,11 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
 
           <button
             onClick={toggle}
+            className="mobile-drawer-item"
             style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%',
-              background: 'none', border: '1px solid var(--border)', borderRadius: 8,
-              padding: '0.55rem 0.75rem', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.85rem',
+              background: 'none', border: '1px solid var(--border)', borderRadius: 10,
+              padding: '0.7rem 0.9rem', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem',
             }}
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
@@ -164,10 +167,11 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
           {username && (
             <button
               onClick={handleLogout}
+              className="mobile-drawer-item"
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%',
-                background: 'none', border: '1px solid var(--border)', borderRadius: 8,
-                padding: '0.55rem 0.75rem', cursor: 'pointer', color: '#ef4444', fontSize: '0.85rem',
+                background: 'none', border: '1px solid var(--border)', borderRadius: 10,
+                padding: '0.7rem 0.9rem', cursor: 'pointer', color: '#ef4444', fontSize: '0.9rem',
               }}
             >
               <LogOut size={16} />
