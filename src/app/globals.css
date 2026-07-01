@@ -87,6 +87,18 @@ body { min-height: 100vh; background: var(--bg-primary); overflow-x: hidden; max
 
 .divider { height: 1px; background: var(--border); }
 
+.mobile-drawer-panel {
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 32px rgba(0,0,0,0.25);
+}
+
+.mobile-drawer-item {
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.mobile-drawer-item:hover  { background: var(--accent-glow) !important; border-color: var(--accent-indigo) !important; }
+.mobile-drawer-item:active { transform: scale(0.98); }
+
 /* Item add / delete micro-animations */
 @keyframes item-enter {
   from { opacity: 0; transform: translateY(-6px); }
