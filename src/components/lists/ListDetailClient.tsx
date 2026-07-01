@@ -10,6 +10,7 @@ import { AddPartnerModal } from './AddPartnerModal'
 import { MembersBar } from './MembersBar'
 import { InStoreMode } from './InStoreMode'
 import { FindMeModal } from './FindMeModal'
+import { useDeviceType } from '@/hooks/useDeviceType'
 
 interface Item {
   id: string
@@ -46,6 +47,8 @@ interface Props {
 }
 
 export function ListDetailClient({ list: initialList, userId }: Props) {
+  const { deviceType } = useDeviceType()
+  const isMobile = deviceType === 'mobile'
   const [items, setItems]             = useState<Item[]>(
     (initialList.items as any[]).map((item: any) => ({
       ...item,
@@ -186,62 +189,68 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
 
       {/* Back + title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <button
-          onClick={() => router.push('/lists')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: '0.25rem' }}
-        >
-          <ArrowRight size={20} />
-        </button>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-primary)', flex: 1 }}>
-          {initialList.name}
-        </h1>
-        {isOwner && (
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <button
-            onClick={() => setShowPartner(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.4rem',
-              padding: '0.45rem 0.9rem', borderRadius: 8,
-              border: '1px solid var(--border)', background: 'none',
-              color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer',
-            }}
+            onClick={() => router.push('/lists')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: '0.25rem' }}
           >
-            <Users size={14} />
-            שותף
+            <ArrowRight size={20} />
           </button>
-        )}
-        {items.length > 0 && (
-          <>
+          <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-primary)', flex: 1 }}>
+            {initialList.name}
+          </h1>
+        </div>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0.5rem', width: isMobile ? '100%' : 'auto' }}>
+          {isOwner && (
             <button
-              onClick={() => setShowFindMe(true)}
+              onClick={() => setShowPartner(true)}
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
                 padding: '0.45rem 0.9rem', borderRadius: 8,
-                border: '1px solid var(--accent-teal)',
-                background: 'rgba(13,148,136,0.08)',
-                color: 'var(--accent-teal)', fontSize: '0.8rem', cursor: 'pointer',
-                fontWeight: 600,
+                border: '1px solid var(--border)', background: 'none',
+                color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer',
+                width: isMobile ? '100%' : 'auto',
               }}
             >
-              <MapPin size={14} />
-              מצא לי
+              <Users size={14} />
+              שותף
             </button>
-            <button
-              onClick={() => setInStoreMode(true)}
-              className="btn-accent"
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                padding: '0.45rem 0.9rem', fontSize: '0.8rem',
-              }}
-            >
-              <ShoppingBag size={14} />
-              מצב קנייה
-            </button>
-          </>
-        )}
+          )}
+          {items.length > 0 && (
+            <>
+              <button
+                onClick={() => setShowFindMe(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                  padding: '0.45rem 0.9rem', borderRadius: 8,
+                  border: '1px solid var(--accent-teal)',
+                  background: 'rgba(13,148,136,0.08)',
+                  color: 'var(--accent-teal)', fontSize: '0.8rem', cursor: 'pointer',
+                  fontWeight: 600, width: isMobile ? '100%' : 'auto',
+                }}
+              >
+                <MapPin size={14} />
+                מצא לי
+              </button>
+              <button
+                onClick={() => setInStoreMode(true)}
+                className="btn-accent"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                  padding: '0.45rem 0.9rem', fontSize: '0.8rem',
+                  width: isMobile ? '100%' : 'auto',
+                }}
+              >
+                <ShoppingBag size={14} />
+                מצב קנייה
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Members */}

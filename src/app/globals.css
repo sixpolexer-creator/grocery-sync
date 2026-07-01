@@ -40,7 +40,12 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-body { min-height: 100vh; background: var(--bg-primary); }
+body { min-height: 100vh; background: var(--bg-primary); overflow-x: hidden; max-width: 100vw; }
+
+@keyframes drawer-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
 
 .bento-card {
   background: var(--bg-card);

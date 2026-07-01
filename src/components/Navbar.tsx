@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useTheme } from './ThemeProvider'
-import { Moon, Sun, ShoppingCart, LogOut, History } from 'lucide-react'
+import { Moon, Sun, ShoppingCart, LogOut, History, Menu, Monitor, Smartphone } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { FriendsPanel } from './FriendsPanel'
+import { MobileDrawer } from './MobileDrawer'
+import { useDeviceType } from '@/hooks/useDeviceType'
 import Image from 'next/image'
 
 interface NavbarProps {
@@ -13,16 +16,167 @@ interface NavbarProps {
   userId: string
 }
 
+const PAGE_LABELS: Record<string, string> = {
+  '/lists':   'רשימות',
+  '/history': 'היסטוריה',
+}
+
 export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
   const { theme, toggle } = useTheme()
   const router   = useRouter()
   const pathname = usePathname()
+  const { deviceType, preference, setDeviceOverride } = useDeviceType()
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
+  }
+
+  const currentPageLabel = Object.entries(PAGE_LABELS).find(
+    ([href]) => pathname?.startsWith(href)
+  )?.[1]
+
+  const deviceToggleButton = (
+    <button
+      onClick={() => setDeviceOverride(preference === 'mobile' ? 'desktop' : preference === 'desktop' ? 'auto' : 'mobile')}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '0.4rem',
+        padding: '0.5rem 0.75rem', borderRadius: 8,
+        border: '1px solid var(--border)', background: 'none',
+        color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', width: '100%',
+      }}
+    >
+      {deviceType === 'mobile' ? <Monitor size={14} /> : <Smartphone size={14} />}
+      {deviceType === 'mobile' ? 'גרסת מחשב' : 'גרסת נייד'}
+    </button>
+  )
+
+  if (deviceType === 'mobile') {
+    return (
+      <header style={{
+        background: 'var(--bg-card)',
+        borderBottom: '1px solid var(--border)',
+        position: 'sticky', top: 0, zIndex: 50,
+        backdropFilter: 'blur(12px)',
+      }}>
+        <div style={{
+          padding: '0 1rem', height: 56, display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', gap: '0.5rem', maxWidth: '100vw',
+        }}>
+          <button
+            onClick={() => router.push('/lists')}
+            aria-label="דף הבית - רשימות קניות"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, minWidth: 0 }}
+          >
+            <Image
+              src="/logo.jpeg"
+              alt="GrocerySync"
+              width={28}
+              height={28}
+              style={{ borderRadius: 6, objectFit: 'contain', flexShrink: 0 }}
+              priority
+            />
+            {currentPageLabel && (
+              <span style={{
+                fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {currentPageLabel}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="פתח תפריט"
+            style={{
+              background: 'none', border: '1px solid var(--border)', borderRadius: 8,
+              padding: '0.4rem', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', flexShrink: 0,
+            }}
+          >
+            <Menu size={18} />
+          </button>
+        </div>
+
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+          {username && (
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {[
+                { href: '/lists',   label: 'רשימות',  icon: <ShoppingCart size={16} /> },
+                { href: '/history', label: 'היסטוריה', icon: <History size={16} /> },
+              ].map(link => (
+                <button
+                  key={link.href}
+                  onClick={() => { router.push(link.href); setDrawerOpen(false) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    padding: '0.55rem 0.75rem', borderRadius: 8,
+                    border: 'none', cursor: 'pointer', fontSize: '0.85rem', width: '100%',
+                    fontWeight: pathname?.startsWith(link.href) ? 600 : 400,
+                    background: pathname?.startsWith(link.href) ? 'var(--accent-glow)' : 'none',
+                    color: pathname?.startsWith(link.href) ? 'var(--accent-indigo)' : 'var(--text-muted)',
+                  }}
+                >
+                  {link.icon}{link.label}
+                </button>
+              ))}
+            </nav>
+          )}
+
+          <div className="divider" />
+
+          {username && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0.75rem' }}>
+              {avatarUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt={username ?? ''} width={28} height={28}
+                  style={{ borderRadius: '50%', border: '1px solid var(--border)' }} />
+              )}
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>@{username}</span>
+            </div>
+          )}
+
+          {username && (
+            <div style={{ padding: '0 0.75rem' }}>
+              <FriendsPanel userId={userId} />
+            </div>
+          )}
+
+          <div className="divider" />
+
+          <button
+            onClick={toggle}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%',
+              background: 'none', border: '1px solid var(--border)', borderRadius: 8,
+              padding: '0.55rem 0.75rem', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.85rem',
+            }}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}
+          </button>
+
+          {deviceToggleButton}
+
+          {username && (
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%',
+                background: 'none', border: '1px solid var(--border)', borderRadius: 8,
+                padding: '0.55rem 0.75rem', cursor: 'pointer', color: '#ef4444', fontSize: '0.85rem',
+              }}
+            >
+              <LogOut size={16} />
+              התנתקות
+            </button>
+          )}
+        </MobileDrawer>
+      </header>
+    )
   }
 
   return (
@@ -125,6 +279,18 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
               <LogOut size={16} />
             </button>
           )}
+
+          <button
+            onClick={() => setDeviceOverride(preference === 'desktop' ? 'auto' : 'desktop')}
+            aria-label="החלף לגרסת נייד"
+            title="גרסת נייד"
+            style={{
+              background: 'none', border: '1px solid var(--border)', borderRadius: 8,
+              padding: '0.35rem', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
+            }}
+          >
+            <Smartphone size={16} />
+          </button>
         </div>
       </div>
     </header>
