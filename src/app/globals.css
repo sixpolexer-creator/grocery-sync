@@ -2,9 +2,9 @@
 
 /* Brand palette derived from logo: forest green + warm orange */
 :root {
-  --bg-primary:    #ffffff;
-  --bg-secondary:  #f4f8f5;
-  --bg-card:       #ffffff;
+  --bg-primary:    #f8f9fa;
+  --bg-secondary:  #f1f3f5;
+  --bg-card:       #fbfbfa;
   --border:        rgba(45, 106, 79, 0.12);
   --text-primary:  #0f1a14;
   --text-muted:    #5a7263;

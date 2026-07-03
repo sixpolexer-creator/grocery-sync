@@ -79,7 +79,7 @@ export function AddPartnerModal({ listId, existingUserIds, onClose }: Props) {
         <div style={{ position: 'relative' }}>
           <Search
             size={14}
-            style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
+            style={{ position: 'absolute', insetInlineStart: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
           />
           <input
             autoFocus
@@ -89,7 +89,8 @@ export function AddPartnerModal({ listId, existingUserIds, onClose }: Props) {
             placeholder="חפש לפי שם משתמש..."
             style={{
               width: '100%',
-              padding: '0.65rem 2.2rem 0.65rem 0.75rem',
+              padding: '0.65rem 0.75rem',
+              paddingInlineStart: '2.2rem',
               borderRadius: 9,
               border: '1px solid var(--border)',
               background: 'var(--bg-secondary)',

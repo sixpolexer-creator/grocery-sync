@@ -139,7 +139,7 @@ export function FriendsPanel({ userId }: Props) {
         <Users size={16} />
         {pending.length > 0 && (
           <span style={{
-            position: 'absolute', top: -4, right: -4,
+            position: 'absolute', top: -4, insetInlineEnd: -4,
             width: 14, height: 14, borderRadius: '50%',
             background: 'var(--accent-indigo)', color: '#fff',
             fontSize: '0.6rem', fontWeight: 700,
@@ -155,9 +155,9 @@ export function FriendsPanel({ userId }: Props) {
         <div
           className="bento-card"
           style={{
-            position: 'absolute', top: 'calc(100% + 8px)', left: 0,
-            width: 300, maxHeight: 480, overflowY: 'auto',
-            zIndex: 200, padding: '1rem',
+            position: 'absolute', top: 'calc(100% + 8px)', insetInlineEnd: 0,
+            width: 300, maxWidth: 'calc(100vw - 2rem)', maxHeight: 480, overflowY: 'auto',
+            zIndex: 210, padding: '1rem',
             boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
             display: 'flex', flexDirection: 'column', gap: '1rem',
             direction: 'rtl',

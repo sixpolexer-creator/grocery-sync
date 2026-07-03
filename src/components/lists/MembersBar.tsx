@@ -53,7 +53,7 @@ export function MembersBar({ members }: Props) {
             @{m.profiles.username}
           </span>
           {m.role === 'owner' && (
-            <span style={{ fontSize: '0.65rem', color: 'var(--accent-indigo)', marginRight: '0.1rem' }}>★</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--accent-indigo)', marginInlineStart: '0.1rem' }}>★</span>
           )}
         </div>
       ))}
