@@ -75,7 +75,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
         <Search
           size={14}
           style={{
-            position: 'absolute', right: '0.75rem', top: '50%',
+            position: 'absolute', insetInlineStart: '0.75rem', top: '50%',
             transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none',
           }}
         />
@@ -88,7 +88,9 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
           placeholder={placeholder}
           style={{
             width: '100%',
-            padding: '0.6rem 2.2rem 0.6rem 0.75rem',
+            padding: '0.6rem',
+            paddingInlineStart: '2.2rem',
+            paddingInlineEnd: '2.2rem',
             borderRadius: 8,
             border: '1px solid var(--border)',
             background: 'var(--bg-secondary)',
@@ -101,7 +103,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
           <button
             onClick={() => { onChange(''); onSelect(null, ''); setResults([]); setOpen(false) }}
             style={{
-              position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)',
+              position: 'absolute', insetInlineEnd: '0.5rem', top: '50%', transform: 'translateY(-50%)',
               background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
               display: 'flex', padding: '0.2rem',
             }}
@@ -114,7 +116,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
       {open && (
         <div
           style={{
-            position: 'absolute', top: 'calc(100% + 4px)', right: 0, left: 0, zIndex: 200,
+            position: 'absolute', top: 'calc(100% + 4px)', insetInlineStart: 0, insetInlineEnd: 0, zIndex: 200,
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
             borderRadius: 10,
@@ -154,7 +156,7 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
               key={product.id}
               onClick={() => { onSelect(product, product.name); setOpen(false); setActiveIdx(-1) }}
               style={{
-                width: '100%', textAlign: 'right', padding: '0.65rem 1rem',
+                width: '100%', textAlign: 'end', padding: '0.65rem 1rem',
                 background: i === activeIdx ? 'var(--accent-glow)' : 'transparent',
                 border: 'none', borderTop: i > 0 ? '1px solid var(--border)' : 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem',

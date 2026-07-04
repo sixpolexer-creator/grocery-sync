@@ -83,7 +83,7 @@ export function FindMeModal({ listId, onClose }: Props) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 50,
+        position: 'fixed', inset: 0, zIndex: 100,
         background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       }}
@@ -238,7 +238,7 @@ function SingleCard({ opt, idx, expanded, onToggle }: {
             )}
           </div>
         </div>
-        <div style={{ textAlign: 'left', flexShrink: 0 }}>
+        <div style={{ textAlign: 'end', flexShrink: 0 }}>
           <div style={{ fontSize: '1.3rem', fontWeight: 800, color: idx === 0 ? 'var(--accent-teal)' : 'var(--text-primary)' }}>
             ₪{opt.totalPrice.toFixed(2)}
           </div>
@@ -300,7 +300,7 @@ function SplitCard({ split, expanded, onToggle }: {
             חיסכון של ₪{split.savingsVsSingle.toFixed(2)} לעומת חנות אחת
           </div>
         </div>
-        <div style={{ textAlign: 'left', flexShrink: 0 }}>
+        <div style={{ textAlign: 'end', flexShrink: 0 }}>
           <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--accent-indigo)' }}>
             ₪{split.totalPrice.toFixed(2)}
           </div>
@@ -314,7 +314,7 @@ function SplitCard({ split, expanded, onToggle }: {
               <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-indigo)', marginBottom: '0.3rem' }}>
                 {stop.chain.chainName}
                 {stop.distanceKm != null && (
-                  <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginRight: '0.4rem' }}>
+                  <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginInlineStart: '0.4rem' }}>
                     {stop.distanceKm < 1 ? `${Math.round(stop.distanceKm * 1000)} מ׳` : `${stop.distanceKm} ק״מ`}
                     {stop.nearestStoreCity ? ` (${stop.nearestStoreCity})` : ''}
                   </span>
@@ -326,7 +326,7 @@ function SplitCard({ split, expanded, onToggle }: {
                   <span>₪{item.subtotal.toFixed(2)}</span>
                 </div>
               ))}
-              <div style={{ textAlign: 'left', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+              <div style={{ textAlign: 'end', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                 סה״כ: ₪{stop.subtotal.toFixed(2)}
               </div>
             </div>

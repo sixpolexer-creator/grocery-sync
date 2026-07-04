@@ -38,7 +38,7 @@ export function HistoryClient({ trips, userId }: Props) {
 
       {/* Empty */}
       {trips.length === 0 && (
-        <div className="bento-card" style={{ padding: '3.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <div className="bento-card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
           <ShoppingBag size={40} style={{ margin: '0 auto 1rem', opacity: 0.2 }} />
           <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>אין היסטוריה עדיין</p>
           <p style={{ fontSize: '0.8rem', marginTop: '0.4rem' }}>סיים קנייה דרך ״מצב קנייה״ כדי לראות נתונים כאן</p>
@@ -142,7 +142,7 @@ function TripCard({ trip }: { trip: TripRow; isOwn: boolean }) {
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', flexShrink: 0, marginRight: '0.75rem' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', flexShrink: 0, marginInlineStart: '0.75rem' }}>
                 {item.quantity}{item.unit ? ` ${item.unit}` : ''}
               </span>
             </div>
