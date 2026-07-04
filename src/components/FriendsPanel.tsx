@@ -15,9 +15,10 @@ interface Friend {
 
 interface Props {
   userId: string
+  inline?: boolean
 }
 
-export function FriendsPanel({ userId }: Props) {
+export function FriendsPanel({ userId, inline = false }: Props) {
   const [open, setOpen]         = useState(false)
   const [friends, setFriends]   = useState<Friend[]>([])
   const [search, setSearch]     = useState('')
@@ -122,7 +123,7 @@ export function FriendsPanel({ userId }: Props) {
   const pending  = friends.filter(f => f.status === 'pending')
 
   return (
-    <div ref={panelRef} style={{ position: 'relative' }}>
+    <div ref={panelRef} style={{ position: inline ? 'static' : 'relative', width: inline ? '100%' : 'auto' }}>
       {/* Trigger button */}
       <button
         onClick={() => setOpen(v => !v)}
@@ -131,13 +132,16 @@ export function FriendsPanel({ userId }: Props) {
           position: 'relative',
           background: open ? 'var(--accent-glow)' : 'none',
           border: `1px solid ${open ? 'var(--accent-indigo)' : 'var(--border)'}`,
-          borderRadius: 8, padding: '0.35rem',
+          borderRadius: 8, padding: inline ? '0.55rem 0.75rem' : '0.35rem',
           cursor: 'pointer', color: open ? 'var(--accent-indigo)' : 'var(--text-muted)',
-          display: 'flex', transition: 'all 0.15s',
+          display: 'flex', alignItems: 'center', gap: inline ? '0.5rem' : 0,
+          width: inline ? '100%' : 'auto', fontSize: inline ? '0.85rem' : undefined,
+          transition: 'all 0.15s',
         }}
       >
-        <Users size={16} />
-        {pending.length > 0 && (
+        <Users size={inline ? 16 : 16} />
+        {inline && `שותפים${pending.length > 0 ? ` (${pending.length} ממתינים)` : ''}`}
+        {!inline && pending.length > 0 && (
           <span style={{
             position: 'absolute', top: -4, insetInlineEnd: -4,
             width: 14, height: 14, borderRadius: '50%',
@@ -150,11 +154,16 @@ export function FriendsPanel({ userId }: Props) {
         )}
       </button>
 
-      {/* Dropdown panel */}
+      {/* Panel: absolute dropdown on desktop, inline flow-pushing block on mobile */}
       {open && (
         <div
           className="bento-card"
-          style={{
+          style={inline ? {
+            position: 'static', width: '100%', maxHeight: 'none', overflowY: 'visible',
+            marginTop: '0.5rem', padding: '1rem',
+            display: 'flex', flexDirection: 'column', gap: '1rem',
+            direction: 'rtl',
+          } : {
             position: 'absolute', top: 'calc(100% + 8px)', insetInlineEnd: 0,
             width: 300, maxWidth: 'calc(100vw - 2rem)', maxHeight: 480, overflowY: 'auto',
             zIndex: 210, padding: '1rem',
