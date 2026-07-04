@@ -40,15 +40,22 @@ export function AddPartnerModal({ listId, existingUserIds, onClose }: Props) {
 
   const addPartner = async (profile: ProfileResult) => {
     setError(null)
+    // Optimistic update — mark as added immediately so the UI feels instant;
+    // roll back only if the insert actually fails.
+    setAdded(prev => new Set(prev).add(profile.id))
+
     const { error: dbErr } = await supabase
       .from('list_members')
       .insert({ list_id: listId, user_id: profile.id, role: 'member' })
 
     if (dbErr) {
+      setAdded(prev => {
+        const next = new Set(prev)
+        next.delete(profile.id)
+        return next
+      })
       setError('שגיאה בהוספת השותף')
-      return
     }
-    setAdded(prev => new Set(prev).add(profile.id))
   }
 
   return (

@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import Image from 'next/image'
 import { Check, Trash2 } from 'lucide-react'
 
 interface Item {
@@ -21,6 +23,7 @@ interface Props {
 }
 
 export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }: Props) {
+  const [imageFailed, setImageFailed] = useState(false)
   return (
     <div
       className="item-enter"
@@ -36,22 +39,31 @@ export function ItemRow({ item, estimatedPrice, onToggle, onDelete, borderTop }:
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
     >
       {/* Product thumbnail */}
-      {item.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={item.image_url}
-          alt=""
-          width={36}
-          height={36}
+      {item.image_url && !imageFailed ? (
+        <div
           style={{
-            borderRadius: 6,
-            objectFit: 'contain',
-            background: 'var(--bg-secondary)',
+            width: 36,
+            height: 36,
             flexShrink: 0,
+            borderRadius: 6,
+            overflow: 'hidden',
+            background: '#0f1115',
+            border: '1px solid rgba(192,197,204,0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             opacity: item.checked ? 0.4 : 1,
           }}
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-        />
+        >
+          <Image
+            src={item.image_url}
+            alt=""
+            width={36}
+            height={36}
+            style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+            onError={() => setImageFailed(true)}
+          />
+        </div>
       ) : (
         <div style={{ width: 36, height: 36, flexShrink: 0 }} />
       )}

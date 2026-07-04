@@ -198,6 +198,7 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
         listId={initialList.id}
         userId={userId}
         items={items}
+        members={members}
         onExit={() => setInStoreMode(false)}
         onFinish={() => router.push('/history')}
       />

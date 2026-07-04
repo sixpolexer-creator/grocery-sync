@@ -5,17 +5,21 @@ import { ListDetailClient } from '@/components/lists/ListDetailClient'
 export default async function ListDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: list } = await supabase
-    .from('lists')
-    .select(`
-      id, name, is_active, owner_id,
-      list_members(user_id, role, profiles(username, avatar_url)),
-      items(id, name, quantity, unit, checked, checked_by, checked_at, added_by, created_at, product_id, products(image_url))
-    `)
-    .eq('id', id)
-    .single()
+  // Auth and the list query run concurrently — the query only needs the
+  // already-set session cookie, not the resolved user object.
+  const [{ data: { user } }, { data: list }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('lists')
+      .select(`
+        id, name, is_active, owner_id,
+        list_members(user_id, role, profiles(username, avatar_url)),
+        items(id, name, quantity, unit, checked, checked_by, checked_at, added_by, created_at, product_id, products(image_url))
+      `)
+      .eq('id', id)
+      .single(),
+  ])
 
   if (!list) notFound()
 

@@ -3,18 +3,23 @@ import { HistoryClient } from '@/components/history/HistoryClient'
 
 export default async function HistoryPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch all trips for lists the user is a member of
-  const { data: trips } = await supabase
-    .from('shopping_trips')
-    .select(`
-      id, total_amount, created_at, receipt_image_url, completed_by,
-      lists(id, name),
-      profiles!completed_by(username, avatar_url),
-      shopping_trip_items(id, item_name, quantity, unit, brand, category)
-    `)
-    .order('created_at', { ascending: false })
+  // Run auth and the trips query concurrently — the query only needs the
+  // already-set session cookie, not the resolved user object, so there's no
+  // reason to serialize these two round-trips.
+  const [{ data: { user } }, { data: trips }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('shopping_trips')
+      .select(`
+        id, total_amount, created_at, receipt_image_url, completed_by,
+        lists(id, name),
+        profiles!completed_by(username, avatar_url),
+        shopping_trip_items(id, item_name, quantity, unit, brand, category)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(50),
+  ])
 
   return <HistoryClient trips={(trips ?? []) as unknown as TripRow[]} userId={user!.id} />
 }
