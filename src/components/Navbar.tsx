@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTheme } from './ThemeProvider'
-import { Moon, Sun, ShoppingCart, LogOut, History, Menu, Monitor, Smartphone } from 'lucide-react'
+import { Moon, Sun, ShoppingCart, LogOut, History, Menu, X, Monitor, Smartphone } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { FriendsPanel } from './FriendsPanel'
@@ -57,6 +57,7 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
 
   if (deviceType === 'mobile') {
     return (
+      <>
       <header style={{
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border)',
@@ -91,16 +92,17 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
           </button>
 
           <button
-            onClick={() => setDrawerOpen(true)}
-            aria-label="פתח תפריט"
+            onClick={() => setDrawerOpen(o => !o)}
+            aria-label={drawerOpen ? 'סגור תפריט' : 'פתח תפריט'}
             style={{
               background: 'none', border: '1px solid var(--border)', borderRadius: 8,
               padding: '0.4rem', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', flexShrink: 0,
             }}
           >
-            <Menu size={18} />
+            {drawerOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
+      </header>
 
         <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
           {username && (
@@ -179,7 +181,7 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
             </button>
           )}
         </MobileDrawer>
-      </header>
+      </>
     )
   }
 
