@@ -137,6 +137,13 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
           if (data) setMembers(data as unknown as Member[])
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'list_members', filter: `list_id=eq.${initialList.id}` },
+        payload => {
+          setMembers(prev => prev.filter(m => m.user_id !== payload.old.user_id))
+        }
+      )
       .subscribe()
 
     channelRef.current = channel
@@ -159,6 +166,15 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
   const deleteItem = async (itemId: string) => {
     setItems(prev => prev.filter(i => i.id !== itemId))
     await supabase.from('items').delete().eq('id', itemId)
+  }
+
+  const removeMember = async (targetUserId: string) => {
+    setMembers(prev => prev.filter(m => m.user_id !== targetUserId))
+    await supabase
+      .from('list_members')
+      .delete()
+      .eq('list_id', initialList.id)
+      .eq('user_id', targetUserId)
   }
 
   const addItem = async (name: string, quantity: number, unit: string, productId?: string, imageUrl?: string) => {
@@ -254,7 +270,7 @@ export function ListDetailClient({ list: initialList, userId }: Props) {
       </div>
 
       {/* Members */}
-      <MembersBar members={members} />
+      <MembersBar members={members} isOwner={isOwner} onRemove={removeMember} />
 
       {/* Add item */}
       <AddItemBar onAdd={(n, q, u, pid, img) => addItem(n, q, u, pid, img)} />

@@ -1,5 +1,7 @@
 'use client'
 
+import { X } from 'lucide-react'
+
 interface Member {
   user_id: string
   role: string
@@ -8,9 +10,11 @@ interface Member {
 
 interface Props {
   members: Member[]
+  isOwner?: boolean
+  onRemove?: (userId: string) => void
 }
 
-export function MembersBar({ members }: Props) {
+export function MembersBar({ members, isOwner, onRemove }: Props) {
   if (members.length <= 1) return null
 
   return (
@@ -54,6 +58,19 @@ export function MembersBar({ members }: Props) {
           </span>
           {m.role === 'owner' && (
             <span style={{ fontSize: '0.65rem', color: 'var(--accent-indigo)', marginInlineStart: '0.1rem' }}>★</span>
+          )}
+          {isOwner && m.role !== 'owner' && onRemove && (
+            <button
+              onClick={() => onRemove(m.user_id)}
+              title="הסר שותף"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)', padding: '0.1rem', marginInlineStart: '0.1rem',
+              }}
+            >
+              <X size={13} />
+            </button>
           )}
         </div>
       ))}
