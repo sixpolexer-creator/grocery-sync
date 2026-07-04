@@ -32,14 +32,18 @@ export function ProductSearch({ value, onChange, onSelect, placeholder = 'חפש
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (value.trim().length < 2) { setResults([]); setOpen(false); return }
 
+    let cancelled = false
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
-      const { data } = await supabase
+      const { data, error } = await supabase
         .rpc('search_products', { query: value.trim(), max_results: 20 })
-      setResults((data as Product[]) ?? [])
+      if (cancelled) return
+      setResults(error ? [] : (data as Product[]) ?? [])
       setOpen(true)
       setLoading(false)
     }, 220)
+
+    return () => { cancelled = true }
   }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close on outside click

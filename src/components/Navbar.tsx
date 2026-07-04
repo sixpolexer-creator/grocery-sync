@@ -9,6 +9,7 @@ import { FriendsPanel } from './FriendsPanel'
 import { MobileDrawer } from './MobileDrawer'
 import { useDeviceType } from '@/hooks/useDeviceType'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface NavbarProps {
   username?: string | null
@@ -68,10 +69,10 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
           padding: '0 1rem', height: 56, display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', gap: '0.5rem', maxWidth: '100vw',
         }}>
-          <button
-            onClick={() => router.push('/lists')}
+          <Link
+            href="/lists"
             aria-label="דף הבית - רשימות קניות"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, minWidth: 0 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, minWidth: 0, textDecoration: 'none' }}
           >
             <Image
               src="/logo.jpeg"
@@ -89,7 +90,7 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
                 {currentPageLabel}
               </span>
             )}
-          </button>
+          </Link>
 
           <button
             onClick={() => setDrawerOpen(o => !o)}
@@ -111,9 +112,10 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
                 { href: '/lists',   label: 'רשימות',  icon: <ShoppingCart size={16} /> },
                 { href: '/history', label: 'היסטוריה', icon: <History size={16} /> },
               ].map(link => (
-                <button
+                <Link
                   key={link.href}
-                  onClick={() => { router.push(link.href); setDrawerOpen(false) }}
+                  href={link.href}
+                  onClick={() => setDrawerOpen(false)}
                   className="mobile-drawer-item"
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -122,10 +124,11 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
                     fontWeight: pathname?.startsWith(link.href) ? 600 : 400,
                     background: pathname?.startsWith(link.href) ? 'var(--accent-glow)' : 'none',
                     color: pathname?.startsWith(link.href) ? 'var(--accent-indigo)' : 'var(--text-muted)',
+                    textDecoration: 'none',
                   }}
                 >
                   {link.icon}{link.label}
-                </button>
+                </Link>
               ))}
             </nav>
           )}
@@ -199,10 +202,10 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
 
         {/* Logo + nav */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <button
-            onClick={() => router.push('/lists')}
+          <Link
+            href="/lists"
             aria-label="דף הבית - רשימות קניות"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, textDecoration: 'none' }}
           >
             <Image
               src="/logo.jpeg"
@@ -213,16 +216,16 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
               priority
             />
             <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>GrocerySync</span>
-          </button>
+          </Link>
           {username && (
             <nav style={{ display: 'flex', gap: '0.25rem' }}>
               {[
                 { href: '/lists',   label: 'רשימות',  icon: <ShoppingCart size={14} /> },
                 { href: '/history', label: 'היסטוריה', icon: <History size={14} /> },
               ].map(link => (
-                <button
+                <Link
                   key={link.href}
-                  onClick={() => router.push(link.href)}
+                  href={link.href}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.3rem',
                     padding: '0.3rem 0.65rem', borderRadius: 7,
@@ -231,10 +234,11 @@ export function Navbar({ username, avatarUrl, userId }: NavbarProps) {
                     background: pathname?.startsWith(link.href) ? 'var(--accent-glow)' : 'none',
                     color: pathname?.startsWith(link.href) ? 'var(--accent-indigo)' : 'var(--text-muted)',
                     transition: 'all 0.15s',
+                    textDecoration: 'none',
                   }}
                 >
                   {link.icon}{link.label}
-                </button>
+                </Link>
               ))}
             </nav>
           )}
