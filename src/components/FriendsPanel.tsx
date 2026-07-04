@@ -178,14 +178,14 @@ export function FriendsPanel({ userId, inline = false }: Props) {
           </p>
 
           {/* Add friend */}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '0.5rem' }}>
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addFriend()}
               placeholder="שם משתמש..."
               style={{
-                flex: 1, padding: '0.5rem 0.75rem', borderRadius: 8,
+                flex: 1, minWidth: inline ? 0 : undefined, padding: '0.5rem 0.75rem', borderRadius: 8,
                 border: '1px solid var(--border)', background: 'var(--bg-secondary)',
                 color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none',
               }}
@@ -194,7 +194,7 @@ export function FriendsPanel({ userId, inline = false }: Props) {
               onClick={addFriend}
               disabled={adding || !search.trim()}
               className="btn-accent"
-              style={{ padding: '0.5rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', opacity: adding ? 0.6 : 1 }}
+              style={{ flexShrink: 0, padding: '0.5rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', opacity: adding ? 0.6 : 1 }}
             >
               <UserPlus size={13} />
               הוסף
