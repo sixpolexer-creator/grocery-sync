@@ -9,7 +9,7 @@ export default async function HistoryPage() {
   const { data: trips } = await supabase
     .from('shopping_trips')
     .select(`
-      id, total_amount, created_at,
+      id, total_amount, created_at, receipt_image_url, completed_by,
       lists(id, name),
       profiles!completed_by(username, avatar_url),
       shopping_trip_items(id, item_name, quantity, unit, brand, category)
@@ -23,6 +23,8 @@ export interface TripRow {
   id: string
   total_amount: number | null
   created_at: string
+  receipt_image_url: string | null
+  completed_by: string
   lists: { id: string; name: string } | null
   profiles: { username: string; avatar_url: string | null } | null
   shopping_trip_items: Array<{

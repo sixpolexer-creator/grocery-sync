@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { History, ShoppingBag, ChevronDown, ChevronUp, User } from 'lucide-react'
+import { History, ShoppingBag, ChevronDown, ChevronUp, User, Trash2, Pencil, Camera, Image as ImageIcon } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import type { TripRow } from '@/app/(app)/history/page'
 
 interface Props {
@@ -9,9 +10,43 @@ interface Props {
   userId: string
 }
 
-export function HistoryClient({ trips, userId }: Props) {
+export function HistoryClient({ trips: initialTrips, userId }: Props) {
+  const [trips, setTrips] = useState<TripRow[]>(initialTrips)
   const totalSpent = trips.reduce((s, t) => s + (t.total_amount ?? 0), 0)
   const tripsWithAmount = trips.filter(t => t.total_amount != null)
+
+  const deleteTrip = async (trip: TripRow) => {
+    if (!confirm('למחוק את הקנייה הזו לצמיתות?')) return
+    const supabase = createClient()
+    setTrips(prev => prev.filter(t => t.id !== trip.id))
+
+    if (trip.receipt_image_url) {
+      const path = extractStoragePath(trip.receipt_image_url)
+      if (path) await supabase.storage.from('receipts').remove([path])
+    }
+    await supabase.from('shopping_trips').delete().eq('id', trip.id)
+  }
+
+  const updateAmount = async (tripId: string, newAmount: number | null) => {
+    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, total_amount: newAmount } : t))
+    const supabase = createClient()
+    await supabase.from('shopping_trips').update({ total_amount: newAmount }).eq('id', tripId)
+  }
+
+  const updateReceiptImage = async (trip: TripRow, file: File) => {
+    const supabase = createClient()
+    const path = `${trip.lists?.id ?? 'unknown'}/${Date.now()}-${file.name}`
+    const { error: uploadErr } = await supabase.storage.from('receipts').upload(path, file)
+    if (uploadErr) return
+
+    const { data: publicUrl } = supabase.storage.from('receipts').getPublicUrl(path)
+    const oldPath = trip.receipt_image_url ? extractStoragePath(trip.receipt_image_url) : null
+
+    setTrips(prev => prev.map(t => t.id === trip.id ? { ...t, receipt_image_url: publicUrl.publicUrl } : t))
+    await supabase.from('shopping_trips').update({ receipt_image_url: publicUrl.publicUrl }).eq('id', trip.id)
+
+    if (oldPath) await supabase.storage.from('receipts').remove([oldPath])
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -47,20 +82,50 @@ export function HistoryClient({ trips, userId }: Props) {
 
       {/* Trip cards */}
       {trips.map(trip => (
-        <TripCard key={trip.id} trip={trip} isOwn={trip.profiles?.username != null} />
+        <TripCard
+          key={trip.id}
+          trip={trip}
+          onDelete={() => deleteTrip(trip)}
+          onUpdateAmount={amount => updateAmount(trip.id, amount)}
+          onUpdateImage={file => updateReceiptImage(trip, file)}
+        />
       ))}
 
     </div>
   )
 }
 
+function extractStoragePath(publicUrl: string): string | null {
+  const marker = '/receipts/'
+  const idx = publicUrl.indexOf(marker)
+  if (idx === -1) return null
+  return publicUrl.slice(idx + marker.length)
+}
+
 // ── Trip card ─────────────────────────────────────────────────────────────────
 
-function TripCard({ trip }: { trip: TripRow; isOwn: boolean }) {
+function TripCard({
+  trip,
+  onDelete,
+  onUpdateAmount,
+  onUpdateImage,
+}: {
+  trip: TripRow
+  onDelete: () => void
+  onUpdateAmount: (amount: number | null) => void
+  onUpdateImage: (file: File) => void
+}) {
   const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [amountInput, setAmountInput] = useState(trip.total_amount != null ? String(trip.total_amount) : '')
   const date = new Date(trip.created_at)
   const list = trip.lists
   const who  = trip.profiles
+
+  const saveAmount = () => {
+    onUpdateAmount(amountInput ? parseFloat(amountInput) : null)
+    setEditing(false)
+  }
 
   return (
     <div className="bento-card" style={{ overflow: 'hidden' }}>
@@ -95,7 +160,7 @@ function TripCard({ trip }: { trip: TripRow; isOwn: boolean }) {
 
         {/* Right: amount + expand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-          {trip.total_amount != null && (
+          {!editing && trip.total_amount != null && (
             <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-teal)' }}>
               ₪{trip.total_amount.toFixed(2)}
             </span>
@@ -114,6 +179,84 @@ function TripCard({ trip }: { trip: TripRow; isOwn: boolean }) {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Edit amount row */}
+      {editing && (
+        <div style={{ padding: '0 1.4rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <input
+            type="number"
+            value={amountInput}
+            onChange={e => setAmountInput(e.target.value)}
+            autoFocus
+            step="0.01"
+            min="0"
+            style={{
+              flex: 1, padding: '0.5rem 0.75rem', borderRadius: 8,
+              border: '1.5px solid var(--accent-teal)', background: 'var(--bg-secondary)',
+              color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', direction: 'ltr',
+            }}
+          />
+          <button onClick={saveAmount} className="btn-accent" style={{ padding: '0.5rem 0.9rem', borderRadius: 8, fontSize: '0.8rem' }}>
+            שמור
+          </button>
+          <button
+            onClick={() => { setEditing(false); setAmountInput(trip.total_amount != null ? String(trip.total_amount) : '') }}
+            style={{ padding: '0.5rem 0.9rem', borderRadius: 8, border: '1px solid var(--border)', background: 'none', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer' }}
+          >
+            ביטול
+          </button>
+        </div>
+      )}
+
+      {/* Receipt image */}
+      {trip.receipt_image_url && (
+        <div style={{ padding: '0 1.4rem 1rem' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={trip.receipt_image_url}
+            alt="קבלה"
+            style={{ maxWidth: '100%', maxHeight: 220, borderRadius: 10, border: '1px solid var(--border)', display: 'block' }}
+          />
+        </div>
+      )}
+
+      {/* Action row */}
+      <div style={{
+        padding: '0.6rem 1.4rem', borderTop: '1px solid var(--border)',
+        display: 'flex', gap: '1.1rem', alignItems: 'center',
+      }}>
+        <button
+          onClick={() => setEditing(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.75rem' }}
+        >
+          <Pencil size={13} />
+          ערוך סכום
+        </button>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+          {trip.receipt_image_url ? <ImageIcon size={13} /> : <Camera size={13} />}
+          {trip.receipt_image_url ? 'החלף תמונה' : 'הוסף תמונה'}
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const file = e.target.files?.[0]
+              if (file) onUpdateImage(file)
+              e.target.value = ''
+            }}
+          />
+        </label>
+
+        <button
+          onClick={onDelete}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.75rem', marginInlineStart: 'auto' }}
+        >
+          <Trash2 size={13} />
+          מחק
+        </button>
       </div>
 
       {/* Collapsible items */}

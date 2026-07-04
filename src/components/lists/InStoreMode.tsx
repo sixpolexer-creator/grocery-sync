@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Check, ShoppingBag, X, CheckCircle2, Sparkles } from 'lucide-react'
+import { Check, ShoppingBag, X, CheckCircle2, Sparkles, Camera } from 'lucide-react'
 
 interface Item {
   id: string
@@ -147,6 +147,7 @@ function FinishModal({
   onDone: () => void
 }) {
   const [amount,  setAmount]  = useState('')
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState<string | null>(null)
   const supabase = createClient()
@@ -155,13 +156,31 @@ function FinishModal({
     setSaving(true)
     setError(null)
 
-    // 1. Create trip record
+    // 1. Upload receipt image, if provided
+    let receiptImageUrl: string | null = null
+    if (receiptFile) {
+      const path = `${listId}/${Date.now()}-${receiptFile.name}`
+      const { error: uploadErr } = await supabase.storage
+        .from('receipts')
+        .upload(path, receiptFile)
+
+      if (uploadErr) {
+        setError('שגיאה בהעלאת התמונה')
+        setSaving(false)
+        return
+      }
+      const { data: publicUrl } = supabase.storage.from('receipts').getPublicUrl(path)
+      receiptImageUrl = publicUrl.publicUrl
+    }
+
+    // 2. Create trip record
     const { data: trip, error: tripErr } = await supabase
       .from('shopping_trips')
       .insert({
         list_id:      listId,
         completed_by: userId,
         total_amount: amount ? parseFloat(amount) : null,
+        receipt_image_url: receiptImageUrl,
       })
       .select('id')
       .single()
@@ -172,7 +191,7 @@ function FinishModal({
       return
     }
 
-    // 2. Save all checked items as trip items
+    // 3. Save all checked items as trip items
     if (checkedItems.length > 0) {
       await supabase.from('shopping_trip_items').insert(
         checkedItems.map(item => ({
@@ -184,7 +203,7 @@ function FinishModal({
       )
     }
 
-    // 3. Delete checked items from the active list
+    // 4. Delete checked items from the active list
     const checkedIds = checkedItems.map(i => i.id)
     if (checkedIds.length > 0) {
       await supabase.from('items').delete().in('id', checkedIds)
@@ -252,6 +271,27 @@ function FinishModal({
             onBlur={e => (e.target.style.borderColor = 'var(--border)')}
           />
         </div>
+
+        {/* Receipt photo upload */}
+        <label
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+            padding: '0.75rem', borderRadius: 10, cursor: 'pointer',
+            border: '1.5px dashed var(--border)', background: 'var(--bg-secondary)',
+            fontSize: '0.85rem', color: receiptFile ? 'var(--accent-teal)' : 'var(--text-muted)',
+            fontWeight: receiptFile ? 600 : 400,
+          }}
+        >
+          <Camera size={16} />
+          {receiptFile ? receiptFile.name : 'צלם או העלה קבלה'}
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={e => setReceiptFile(e.target.files?.[0] ?? null)}
+            style={{ display: 'none' }}
+          />
+        </label>
 
         {/* Checked items preview */}
         {checkedItems.length > 0 && (
