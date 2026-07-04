@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grocery Sync"
+  short_description: "Repo-specific patterns and workflows for grocery-sync"
+  default_prompt: "Use the grocery-sync repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
