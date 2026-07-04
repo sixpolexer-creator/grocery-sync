@@ -12,15 +12,22 @@ interface Item {
   checked: boolean
 }
 
+interface Member {
+  user_id: string
+  role: string
+  profiles: { username: string; avatar_url: string | null }
+}
+
 interface Props {
   listId: string
   userId: string
   items: Item[]
+  members: Member[]
   onExit: () => void
   onFinish: () => void
 }
 
-export function InStoreMode({ listId, userId, items: initialItems, onExit, onFinish }: Props) {
+export function InStoreMode({ listId, userId, items: initialItems, members, onExit, onFinish }: Props) {
   const [items, setItems]           = useState<Item[]>(initialItems)
   const [showFinish, setShowFinish] = useState(false)
 
@@ -123,6 +130,7 @@ export function InStoreMode({ listId, userId, items: initialItems, onExit, onFin
           listId={listId}
           userId={userId}
           checkedItems={checkedItems}
+          members={members}
           onClose={() => setShowFinish(false)}
           onDone={onFinish}
         />
@@ -137,12 +145,14 @@ function FinishModal({
   listId,
   userId,
   checkedItems,
+  members,
   onClose,
   onDone,
 }: {
   listId: string
   userId: string
   checkedItems: Item[]
+  members: Member[]
   onClose: () => void
   onDone: () => void
 }) {
@@ -150,6 +160,19 @@ function FinishModal({
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState<string | null>(null)
+  // Selective receipt sharing — default to everyone on the list, buyer included
+  const [sharedWith, setSharedWith] = useState<Set<string>>(
+    new Set(members.map(m => m.user_id))
+  )
+  const otherMembers = members.filter(m => m.user_id !== userId)
+  const toggleShared = (targetUserId: string) => {
+    setSharedWith(prev => {
+      const next = new Set(prev)
+      if (next.has(targetUserId)) next.delete(targetUserId)
+      else next.add(targetUserId)
+      return next
+    })
+  }
   const supabase = createClient()
 
   const handleSave = async () => {
@@ -191,7 +214,14 @@ function FinishModal({
       return
     }
 
-    // 3. Save all checked items as trip items
+    // 3. Map this trip to the selected participants (buyer always included)
+    const participantIds = new Set(sharedWith)
+    participantIds.add(userId)
+    await supabase.from('shopping_trip_participants').insert(
+      Array.from(participantIds).map(uid => ({ trip_id: trip.id, user_id: uid }))
+    )
+
+    // 4. Save all checked items as trip items
     if (checkedItems.length > 0) {
       await supabase.from('shopping_trip_items').insert(
         checkedItems.map(item => ({
@@ -203,7 +233,7 @@ function FinishModal({
       )
     }
 
-    // 4. Delete checked items from the active list
+    // 5. Delete checked items from the active list
     const checkedIds = checkedItems.map(i => i.id)
     if (checkedIds.length > 0) {
       await supabase.from('items').delete().in('id', checkedIds)
@@ -292,6 +322,51 @@ function FinishModal({
             style={{ display: 'none' }}
           />
         </label>
+
+        {/* Selective receipt sharing */}
+        {otherMembers.length > 0 && (
+          <div
+            style={{
+              borderRadius: 12,
+              background: '#161b22',
+              border: '1px solid rgba(45,212,191,0.18)',
+              padding: '0.85rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.55rem',
+            }}
+          >
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent-teal)' }}>
+              מי יראה את הקנייה הזו בהיסטוריה?
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {otherMembers.map(member => {
+                const checked = sharedWith.has(member.user_id)
+                return (
+                  <label
+                    key={member.user_id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer',
+                      padding: '0.4rem 0.5rem', borderRadius: 8,
+                      background: checked ? 'rgba(45,212,191,0.08)' : 'transparent',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleShared(member.user_id)}
+                      style={{ accentColor: 'var(--accent-teal)', width: 15, height: 15 }}
+                    />
+                    <span style={{ fontSize: '0.85rem', color: '#e6e9ef', fontWeight: checked ? 600 : 400 }}>
+                      @{member.profiles.username}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Checked items preview */}
         {checkedItems.length > 0 && (
