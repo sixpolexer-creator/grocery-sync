@@ -44,3 +44,10 @@ next-env.d.ts
 
 # generated harvest data (large binary-ish blobs)
 /data/
+
+# raw scraped price feeds + Python venv (scraper/run_scrape.py output)
+/scraper/dumps/
+/scraper/status_logs/
+/scraper/.venv/
+/scraper/__pycache__/
+*.pyc
