@@ -1,0 +1,7 @@
+# Pinned to a specific commit (not `main`) so an upstream change can't silently
+# break the scheduled scrape. Bump deliberately: update the SHA, re-run
+# scraper/run_scrape.py locally against a couple of chains, then commit.
+#
+# Source: https://github.com/OpenIsraeliSupermarkets/israeli-supermarket-scarpers
+# License: non-commercial use only, with attribution — see scraper/README.md.
+il-supermarket-scraper @ git+https://github.com/OpenIsraeliSupermarkets/israeli-supermarket-scarpers.git@d34a32ba5bf1630028da68b00702d1f2ab6b2dcc

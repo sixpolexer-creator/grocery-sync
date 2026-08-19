@@ -1,0 +1,50 @@
+name: Scrape & sync grocery prices
+
+on:
+  schedule:
+    # 03:00 UTC daily (~05:00/06:00 Israel time) — off-peak for the gov feeds.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      enabled_scrapers:
+        description: 'Comma-separated ScraperFactory names to restrict to (blank = all chains)'
+        required: false
+        default: ''
+      limit:
+        description: 'Max files per chain (useful for a quick manual test run)'
+        required: false
+        default: ''
+
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install scraper
+        run: pip install -r scraper/requirements.txt
+
+      - name: Scrape price feeds
+        env:
+          ENABLED_SCRAPERS: ${{ github.event.inputs.enabled_scrapers }}
+          LIMIT: ${{ github.event.inputs.limit }}
+        run: python scraper/run_scrape.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Parse & upsert into Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/sync_scraped_prices.js
