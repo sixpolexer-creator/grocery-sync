@@ -23,9 +23,11 @@ const BATCH = 500;
 
 const CHAIN_NAME_MAP = require('../scraper/chain-name-map.json');
 
+// Keyed by the actual scraper/dumps/<X> folder name (il_supermarket_scarper's
+// DumpFolderNames value, e.g. "RamiLevy") — NOT the ScraperFactory enum name
+// ("RAMI_LEVY"). Confirmed against a real run; see chain-name-map.json's comment.
 function marketNameFor(scraperFolderName) {
-  return CHAIN_NAME_MAP[scraperFolderName]
-    || scraperFolderName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return CHAIN_NAME_MAP[scraperFolderName] || scraperFolderName;
 }
 
 // ── XML parsing (mirrors src/pricing-engine/utils/xml-stream.ts + parsers/xml-price.ts) ──
@@ -75,7 +77,10 @@ function parseGovPriceXml(raw) {
     results.push({
       barcode: barcode || null,
       name,
-      brand: xmlStr(item.ManufacturerName ?? item.Manufacturer) || null,
+      // Field name varies by chain: some feeds use "ManufacturerName", others
+      // (e.g. Rami Levy, confirmed against a real dump) misspell it as
+      // "ManufactureName". Check both.
+      brand: xmlStr(item.ManufacturerName ?? item.ManufactureName ?? item.Manufacturer) || null,
       category: xmlStr(item.ItemSection ?? item.Category) || null,
       price,
     });

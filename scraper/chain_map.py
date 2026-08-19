@@ -1,6 +1,8 @@
 """
-Maps il_supermarket_scarper's ScraperFactory names to the Hebrew chain-name
-strings grocery-sync stores in market_prices.market_name.
+Maps il_supermarket_scarper's DumpFolderNames values (the actual
+scraper/dumps/<X> folder name on disk, e.g. "RamiLevy" — NOT the
+ScraperFactory enum name, e.g. "RAMI_LEVY") to the Hebrew chain-name strings
+grocery-sync stores in market_prices.market_name.
 
 The actual map lives in scraper/chain-name-map.json — shared with
 scripts/sync_scraped_prices.js so there's one source of truth. This module
@@ -18,8 +20,9 @@ with open(_MAP_PATH, encoding="utf-8") as f:
 CHAIN_NAME_MAP = {k: v for k, v in _raw.items() if not k.startswith("_")}
 
 
-def market_name_for(scraper_name: str) -> str:
-    """Hebrew market_name for a ScraperFactory member name; falls back to the
-    raw enum name (title-cased) if a chain is added upstream before this map
-    is updated, so the sync never silently drops a chain's data."""
-    return CHAIN_NAME_MAP.get(scraper_name, scraper_name.replace("_", " ").title())
+def market_name_for(dump_folder_name: str) -> str:
+    """Hebrew market_name for a DumpFolderNames value (dump folder name);
+    falls back to the raw folder name (spaced out) if a chain is added
+    upstream before this map is updated, so the sync never silently drops a
+    chain's data."""
+    return CHAIN_NAME_MAP.get(dump_folder_name, dump_folder_name)
