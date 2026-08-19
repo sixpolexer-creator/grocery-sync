@@ -106,6 +106,33 @@ if the upstream package adds/renames a chain. A chain missing from `CHAIN_STORES
 `compare/route.ts` still gets synced — it's just excluded from geolocation-filtered
 results until a branch location is added there.
 
+## Product categorization
+
+`products.category` is a plain nullable text column with **no formal taxonomy enforced in
+code** — it's maintained by periodically re-running a keyword/regex classification `UPDATE`
+directly in Supabase (SQL, not checked into this repo as of 2026-08-19), not by anything the
+scraper writes. `scripts/sync_scraped_prices.js` deliberately **omits** `category` from its
+`products` upsert payload — the raw gov feeds almost never include a category field, so
+including it would null out (or otherwise overwrite) whatever classification a product
+already has on every sync run. If you ever need `category` in that upsert again, don't add
+it back without also fixing that overwrite behavior (e.g. only set it when the feed value is
+non-null and the existing row's category is null).
+
+Current canonical categories (Hebrew, 22 + a `כללי` general/uncategorized-in-spirit
+catch-all — as of the 2026-08-19 classification pass, ~60% of the 209k-product catalog
+landed in `כללי` since it includes a lot of non-grocery general-merchandise items from
+convenience-store-type chains, not just food):
+`חלב וביצים` `בשר ועוף` `דגים` `ירקות ופירות` `לחם ומאפים` `דגני בוקר` `חטיפים וממתקים`
+`שתייה` `קפה ותה` `שימורים ורטבים` `יבשים וקטניות` `שמנים` `ניקיון` `טיפוח` `אלכוהול וטבק`
+`אלקטרוניקה` `תינוקות` `מזון לחיות מחמד` `כלי מטבח וחד פעמי` `הנעלה וביגוד` `צעצועים ומסיבות`
+`קפוא`, plus `כללי`.
+
+**Known gap**: new products inserted by future scrape runs get `category = NULL` by default
+and stay that way until the classification pass is re-run manually — there's no automated
+re-classification job. Worth turning the classification `UPDATE` into a tracked SQL script
+(or wiring the same keyword rules into `sync_scraped_prices.js` at insert time) rather than
+re-deriving it ad hoc each time.
+
 Once this pipeline has run reliably for a while, `scripts/harvest_catalogs.js`
 (Shufersal-only, manual) becomes redundant and can be retired.
 

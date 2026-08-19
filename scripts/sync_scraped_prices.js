@@ -159,7 +159,14 @@ async function main() {
       const { error } = await supabase
         .from('products')
         .upsert(
-          batch.map(r => ({ barcode: r.barcode, name: r.name, brand: r.brand, category: r.category })),
+          // category is intentionally omitted: it's maintained by a separate
+          // keyword-classification pass over product names (see CLAUDE.md,
+          // "Product categorization"), not by the raw feed value (which is
+          // almost always absent/inconsistent). Omitting the column means
+          // Supabase's upsert leaves an existing row's category untouched on
+          // conflict — including it here would silently null out or
+          // overwrite that classification on every sync run.
+          batch.map(r => ({ barcode: r.barcode, name: r.name, brand: r.brand })),
           { onConflict: 'barcode' }
         );
       if (error) { errors.push(`${scraperDir.name} products upsert: ${error.message}`); continue; }
